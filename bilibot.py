@@ -123,11 +123,6 @@ async def run_task(bvid: str, fav_id: int):
         traceback.print_exc()
 
 async def main():
-    log_info("=== 脚本启动 ===")
-
-    # 1. 随机延迟 0~600 秒（实现北京时间 6:00 ±10 分钟）
-    delay = random.randint(0, 600)
-    log_wait(f"随机延迟 {delay} 秒后开始执行...")
     await asyncio.sleep(delay)
 
     # 2. 准备收藏夹
@@ -161,4 +156,7 @@ async def main():
     log_success("=== 全部完成 ===")
 
 if __name__ == '__main__':
+    log_info("=== 脚本启动 ===")
+    delay = random.randint(0, 600)
+    log_wait(f"随机延迟 {delay} 秒后开始执行...")
     asyncio.run(main())
