@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B站数据可视化</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #fb7299; }
+        .chart-wrapper { margin: 30px 0; height: 300px; }
+        .info { text-align: center; color: #666; }
+        .error { color: red; text-align: center; }
+        .loading { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 B站数据趋势</h1>
+        <div class="info" id="last-update">加载中...</div>
+
+        <div class="chart-wrapper">
+            <canvas id="expChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="coinChart"></canvas>
+        </div>
+        <div id="error-msg" class="error"></div>
+        <div class="loading" id="loading">⏳ 数据加载中...</div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://bilibilibot.luyj.workers.dev'; // 替换为你的 Worker 地址
+
+        async function fetchData() {
+            const res = await fetch(WORKER_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        }
+
+        function formatDate(iso) {
+            const d = new Date(iso);
+            return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+        }
+
+        async function init() {
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('error-msg');
+            const lastUpdate = document.getElementById('last-update');
+
+            try {
+                const data = await fetchData();
+                loading.style.display = 'none';
+
+                if (!data.length) {
+                    errorMsg.textContent = '暂无数据，请先运行记录脚本。';
+                    return;
+                }
+
+                // 准备数据
+                const labels = data.map(item => formatDate(item.record_time));
+                const expData = data.map(item => item.exp);
+                const coinData = data.map(item => item.coins);
+                const levelData = data.map(item => item.level);
+
+                // 更新最后更新时间
+                const lastTime = data[data.length-1].record_time;
+                lastUpdate.textContent = `📅 最新记录：${new Date(lastTime).toLocaleString()}`;
+
+                // 绘制经验图
+                const ctxExp = document.getElementById('expChart').getContext('2d');
+                new Chart(ctxExp, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '经验值',
+                                data: expData,
+                                borderColor: '#fb7299',
+                                backgroundColor: 'rgba(251,114,153,0.1)',
+                                tension: 0.1,
+                                fill: true,
+                                yAxisID: 'y',
+                            },
+                            {
+                                label: '等级',
+                                data: levelData,
+                                borderColor: '#ffb347',
+                                backgroundColor: 'rgba(255,179,71,0.1)',
+                                tension: 0.1,
+                                fill: false,
+                                yAxisID: 'y1',
+                                borderDash: [5,5],
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: '经验与等级趋势' }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                            }
+                        }
+                    }
+                });
+
+                // 绘制硬币图
+                const ctxCoin = document.getElementById('coinChart').getContext('2d');
+                new Chart(ctxCoin, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '硬币数',
+                            data: coinData,
+                            borderColor: '#ffd700',
+                            backgroundColor: 'rgba(255,215,0,0.1)',
+                            tension: 0.1,
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: '硬币趋势' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+
+            } catch (err) {
+                loading.style.display = 'none';
+                errorMsg.textContent = `加载失败：${err.message}`;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
