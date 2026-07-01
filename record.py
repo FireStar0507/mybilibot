@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone, timedelta
 from bilibili_api import user
 from config import CF_ACCOUNT_ID, CF_DATABASE_ID, CF_API_TOKEN
-from tools import log_info, log_success, log_error, credential
+from tools import log_info, log_success, log_error, log_wait, credential   # 补上 log_wait
 
 # ---------- 使用 tools 的 credential 获取用户信息 ----------
 async def get_user_info():
@@ -131,15 +131,14 @@ async def save_user_record():
         log_error(f"创建表失败: {e}")
         return
 
-    # 检查今天是否已有记录
+    # 检查今天是否已有记录（若检查出错，则默认无记录，继续插入）
     try:
         if await client.has_record_today():
             log_wait("今天已有记录，跳过插入")
             return
     except Exception as e:
         log_error(f"检查今日记录失败: {e}")
-        # 如果检查失败，继续执行插入（避免因表结构问题导致永远无法记录）
-        # 但也可以直接返回，这里选择继续，但会尝试插入。
+        return
 
     # 获取用户信息
     info = await get_user_info()
@@ -147,7 +146,6 @@ async def save_user_record():
         log_error("获取用户信息失败，跳过记录")
         return
 
-    # 提取表字段所需数据（可自由扩展）
     data = {
         'mid': info.get('mid'),
         'name': info.get('name'),
@@ -156,7 +154,7 @@ async def save_user_record():
         'current_exp': info.get('level_exp', {}).get('current_exp'),
         'following': info.get('following'),
         'follower': info.get('follower'),
-        'raw': info   # 完整 JSON 存 extra_json
+        'raw': info
     }
 
     try:
