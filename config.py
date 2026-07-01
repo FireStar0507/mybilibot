@@ -1,12 +1,25 @@
 import os
+import json
 
-# ----- B站 Cookie -----
-SESSDATA = "b2bea5cd%2C1789560328%2C649ee%2A31CjBrssP3N3yrKfaXdp9SYcD4LqeaLHCA3sRC4rFbsHl-pEOlfDlKFCUxGGxzjT-ICgcSVlItcjQwT2tRVGswN0E4LXNacVZGSjBMWGxROVEyRG55LUtmQnFqdVZDODlZdmlDc3RUUjZ6dS1PNnBUWTNIX0V0SG9yd0tjaXFjbnNVbDFveTdraTh3IIEC"
-BILI_JCT = "edbd254b5d666456acccdb6bc3fed873"
-BUVID3 = "BD53345F-F5B9-1358-868D-8130574ED79C19723infoc"
-DEDEUSERID = "3546700960500449"
+# 从环境变量读取 B 站认证
+BILIBILI_AUTH_JSON = os.getenv("BILIBILI_AUTH", "{}")
+try:
+    _auth = json.loads(BILIBILI_AUTH_JSON)
+except json.JSONDecodeError:
+    _auth = {}
 
-# ----- Cloudflare D1 配置（已填入你的信息）-----
-CF_ACCOUNT_ID = "a92a4e06bfbcaf79017a99e8a4ca9b62"
-CF_DATABASE_ID = "1a73d84e-3e24-4ed5-b673-e25c4c16c007"
-CF_API_TOKEN = "cfut_eJjxaYvbmt3SLiInD3BMYy8bgHEKWSwblSHTjBvKf876ef77"
+SESSDATA = _auth.get("sessdata", "")
+BILI_JCT = _auth.get("bili_jct", "")
+BUVID3 = _auth.get("buvid3", "")
+DEDEUSERID = _auth.get("dedeuserid", "")
+
+# 从环境变量读取 Cloudflare D1 配置
+CF_D1_JSON = os.getenv("CF_D1", "{}")
+try:
+    _cf = json.loads(CF_D1_JSON)
+except json.JSONDecodeError:
+    _cf = {}
+
+CF_ACCOUNT_ID = _cf.get("account_id", "")
+CF_DATABASE_ID = _cf.get("database_id", "")
+CF_API_TOKEN = _cf.get("api_token", "")
