@@ -8,17 +8,18 @@ from bilibili_api.exceptions import NetworkException
 from config import SESSDATA, BILI_JCT, BUVID3, DEDEUSERID
 
 # ---------- 日志函数 ----------
+# tools.py（片段）
 def log_info(msg: str):
-    print(f"[*] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}")
+    print(f"[*] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}", flush=True)
 
 def log_success(msg: str):
-    print(f"[+] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}")
+    print(f"[+] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}", flush=True)
 
 def log_error(msg: str):
-    print(f"[!] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}")
+    print(f"[!] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}", flush=True)
 
 def log_wait(msg: str):
-    print(f"[?] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}")
+    print(f"[?] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {msg}", flush=True)
 
 # ---------- 全局凭证 ----------
 credential = Credential(
