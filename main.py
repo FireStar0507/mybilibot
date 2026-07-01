@@ -8,7 +8,7 @@ from record import save_user_record
 async def main():
     log_info("=== 程序启动 ===")
 
-    delay = random.randint(0, 600)
+    delay = 1#random.randint(0, 600)
     log_wait(f"随机延迟 {delay} 秒后开始执行...")
     await asyncio.sleep(delay)
 
