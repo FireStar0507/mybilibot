@@ -27,20 +27,30 @@ class D1Client:
         self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}/query"
 
     async def execute(self, sql: str):
-        """执行 SQL（不返回结果）"""
+        """执行 SQL 语句（使用 POST 方法）"""
         async with httpx.AsyncClient(timeout=30) as client:
             headers = {
                 "Authorization": f"Bearer {self.api_token}",
                 "Content-Type": "application/json"
             }
+            # Cloudflare D1 /query 端点需要使用 POST 方法
+            # 并将 SQL 语句放在请求体中
             payload = {"sql": sql}
             resp = await client.post(self.base_url, json=payload, headers=headers)
+            
+            # 如果请求失败，打印更详细的错误信息
+            if resp.status_code != 200:
+                log_error(f"D1 API 请求失败: {resp.status_code}")
+                log_error(f"响应内容: {resp.text}")
+                
             resp.raise_for_status()
             return resp.json()
 
     async def query(self, sql: str):
         """执行查询并返回结果行列表"""
         resp = await self.execute(sql)
+        # 根据 Cloudflare D1 API 的返回结构解析结果
+        # 返回的 JSON 中，results 在 result[0].results 里
         results = resp.get('result', [])
         if results:
             rows = results[0].get('results', [])
